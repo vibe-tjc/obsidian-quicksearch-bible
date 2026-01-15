@@ -1,8 +1,19 @@
-/*
+.bible-suggestion {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 4px 0;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.bible-suggestion-reference {
+	font-weight: 600;
+	color: var(--text-normal);
+}
 
-If your plugin does not need CSS, delete this file.
-
-*/
+.bible-suggestion-preview {
+	font-size: 0.85em;
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
