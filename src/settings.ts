@@ -1,3 +1,5 @@
+/* eslint-disable obsidianmd/ui/sentence-case */
+
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type BibleQuickSearchPlugin from "./main";
 import type { BibleVersion, Language } from "./types";
@@ -11,19 +13,18 @@ export class BibleSearchSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	async display(): Promise<void> {
+	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Bible QuickSearch settings" });
-
-		this.versions = await this.plugin.db.listBibleVersions();
-
-		this.addBibleVersionSetting(containerEl);
-		this.addTriggerPrefixSetting(containerEl);
-		this.addMaxResultsSetting(containerEl);
-		this.addLanguageSetting(containerEl);
-		this.addInsertFormatSetting(containerEl);
+		void this.plugin.db.listBibleVersions().then((versions) => {
+			this.versions = versions;
+			this.addBibleVersionSetting(containerEl);
+			this.addTriggerPrefixSetting(containerEl);
+			this.addMaxResultsSetting(containerEl);
+			this.addLanguageSetting(containerEl);
+			this.addInsertFormatSetting(containerEl);
+		});
 	}
 
 	private addBibleVersionSetting(containerEl: HTMLElement): void {
@@ -32,11 +33,13 @@ export class BibleSearchSettingTab extends PluginSettingTab {
 			.setDesc("Select the Bible version to search from the db/ folder");
 
 		if (this.versions.length === 0) {
-			setting.setDesc("No Bible databases found. Place .db files in the db/ folder within the plugin directory.");
+			setting.setDesc(
+				"No Bible databases found. Place .db files in the db/ folder within the plugin directory.",
+			);
 			setting.addButton((button) =>
-				button.setButtonText("Refresh").onClick(async () => {
-					await this.display();
-				})
+				button.setButtonText("Refresh").onClick(() => {
+					this.display();
+				}),
 			);
 		} else {
 			setting.addDropdown((dropdown) => {
@@ -59,7 +62,9 @@ export class BibleSearchSettingTab extends PluginSettingTab {
 	private addTriggerPrefixSetting(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName("Trigger prefix")
-			.setDesc("The prefix that triggers Bible verse search (e.g., \"--\" for \"--love\")")
+			.setDesc(
+				'The prefix that triggers Bible verse search (e.g., "--" for "--love")',
+			)
 			.addText((text) =>
 				text
 					.setPlaceholder("--")
@@ -70,7 +75,7 @@ export class BibleSearchSettingTab extends PluginSettingTab {
 							await this.plugin.saveSettings();
 							this.plugin.updateSuggester();
 						}
-					})
+					}),
 			);
 	}
 
@@ -86,7 +91,7 @@ export class BibleSearchSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.maxResults = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 	}
 
@@ -108,21 +113,23 @@ export class BibleSearchSettingTab extends PluginSettingTab {
 	private addInsertFormatSetting(containerEl: HTMLElement): void {
 		new Setting(containerEl)
 			.setName("Insert format")
-			.setDesc("Format template for inserted verses. Use {book}, {chapter}, {verse}, {text} as placeholders.")
+			.setDesc(
+				"Format template for inserted verses. Use {book}, {chapter}, {verse}, {text} as placeholders.",
+			)
 			.addTextArea((text) => {
 				text.inputEl.rows = 3;
 				text.inputEl.cols = 40;
-				text
-					.setPlaceholder("{book} {chapter}:{verse} - {text}")
+				text.setPlaceholder("{book} {chapter}:{verse} - {text}")
 					.setValue(this.plugin.settings.insertFormat)
 					.onChange(async (value) => {
-						this.plugin.settings.insertFormat = value || "{book} {chapter}:{verse} - {text}";
+						this.plugin.settings.insertFormat =
+							value || "{book} {chapter}:{verse} - {text}";
 						await this.plugin.saveSettings();
 					});
 			});
 
 		containerEl.createEl("p", {
-			text: "Example: \"{book} {chapter}:{verse} - {text}\" → \"Genesis 1:1 - In the beginning...\"",
+			text: 'Example: "{book} {chapter}:{verse} - {text}" → "Genesis 1:1 - In the beginning..."',
 			cls: "setting-item-description",
 		});
 	}

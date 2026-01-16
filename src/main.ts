@@ -1,5 +1,7 @@
+/* eslint-disable obsidianmd/ui/sentence-case */
+
 import { Notice, Plugin } from "obsidian";
-import { BibleSearchSettings, DEFAULT_SETTINGS } from "./types";
+import { type BibleSearchSettings, DEFAULT_SETTINGS } from "./types";
 import { BibleSearchSettingTab } from "./settings";
 import { BibleDatabase } from "./db/database";
 import { BibleSuggester } from "./ui/bible-suggester";
@@ -30,7 +32,11 @@ export default class BibleQuickSearchPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			await this.loadData(),
+		) as BibleSearchSettings;
 	}
 
 	async saveSettings(): Promise<void> {
@@ -44,9 +50,14 @@ export default class BibleQuickSearchPlugin extends Plugin {
 
 		const success = await this.db.loadDatabase(this.settings.bibleVersion);
 		if (success) {
-			new Notice(`Bible loaded: ${this.settings.bibleVersion.replace(/\.(db|sqlite|sqlite3)$/, "")}`);
+			new Notice(
+				`Bible loaded: ${this.settings.bibleVersion.replace(/\.(db|sqlite|sqlite3)$/, "")}`,
+			);
 		} else {
-			new Notice("Failed to load Bible database. Check the console for details.");
+			console.error("Failed to load Bible database.");
+			new Notice(
+				"Failed to load Bible database. Check the console for details.",
+			);
 		}
 	}
 
