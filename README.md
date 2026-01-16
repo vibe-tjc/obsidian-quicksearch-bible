@@ -1,90 +1,101 @@
-# Obsidian Sample Plugin
+# Bible QuickSearch
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+一個 Obsidian 外掛，讓你可以透過關鍵字快速搜尋聖經經文，並輕鬆插入到筆記中。
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## 功能特色
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+- **快速搜尋**：輸入觸發前綴（預設 `--`）加上關鍵字，即時顯示符合的經文
+- **多版本支援**：支援多個聖經 SQLite 資料庫，可自由切換版本
+- **雙語介面**：支援英文與繁體中文書卷名稱顯示
+- **自訂格式**：可自訂插入經文的格式範本
+- **跨平台相容**：支援桌面版與行動版 Obsidian
 
-## First time developing plugins?
+## 安裝方式
 
-Quick starting guide for new plugin devs:
+### 手動安裝
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+1. 下載最新版本的 `main.js`、`manifest.json`、`styles.css`
+2. 在你的 Vault 中建立資料夾：`.obsidian/plugins/bible-quicksearch/`
+3. 將下載的檔案複製到該資料夾
+4. 在資料夾中建立 `db/` 子目錄
+5. 將你的聖經 SQLite 資料庫（`.db` 檔案）放入 `db/` 目錄
+6. 重新啟動 Obsidian，在設定中啟用外掛
 
-## Releasing new releases
+## 資料庫格式
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+本外掛使用 SQLite 資料庫儲存聖經經文。資料庫需包含 `verses` 資料表，結構如下：
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+| 欄位 | 類型 | 說明 |
+|------|------|------|
+| id | INTEGER | 唯一識別碼（主鍵） |
+| book | INTEGER | 書卷編號（1-66） |
+| chapter | INTEGER | 章節編號 |
+| verse | INTEGER | 節編號 |
+| text | TEXT | 經文內容 |
 
-## Adding your plugin to the community plugin list
+書卷編號對照：
+- 1：創世記 (Genesis)
+- 19：詩篇 (Psalms)
+- 40：馬太福音 (Matthew)
+- 66：啟示錄 (Revelation)
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+## 使用方式
 
-## How to use
+### 搜尋經文
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+1. 在編輯器中輸入觸發前綴加上關鍵字，例如：`--愛`
+2. 彈出式選單會顯示符合的經文列表
+3. 使用方向鍵選擇經文，按 Enter 插入
 
-## Manually installing the plugin
+### 設定選項
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+在 **設定 → Bible QuickSearch** 中可調整：
 
-## Improve code quality with eslint
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
+| 設定項目 | 說明 | 預設值 |
+|----------|------|--------|
+| Bible version | 選擇要搜尋的聖經版本 | - |
+| Trigger prefix | 觸發搜尋的前綴字元 | `--` |
+| Maximum results | 顯示的最大搜尋結果數 | 5 |
+| Display language | 書卷名稱的顯示語言 | English |
+| Insert format | 插入經文的格式範本 | `{book} {chapter}:{verse} - {text}` |
 
-## Funding URL
+### 格式範本變數
 
-You can include funding URLs where people who use your plugin can financially support it.
+在「Insert format」中可使用以下變數：
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+- `{book}` - 書卷名稱
+- `{chapter}` - 章
+- `{verse}` - 節
+- `{text}` - 經文內容
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
+範例格式：
+- `{book} {chapter}:{verse} - {text}` → 「創世記 1:1 - 起初，神創造天地。」
+- `> {text}\n> — {book} {chapter}:{verse}` → 引用區塊格式
+- `**{book} {chapter}:{verse}** {text}` → 粗體參照格式
+
+## 開發
+
+### 環境需求
+
+- Node.js 16+
+- npm
+
+### 開發指令
+
+```bash
+# 安裝相依套件
+npm install
+
+# 開發模式（監聽檔案變更）
+npm run dev
+
+# 建置正式版本
+npm run build
+
+# 程式碼檢查
+npm run lint
 ```
 
-If you have multiple URLs, you can also do:
+## 授權條款
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
-
-## API Documentation
-
-See https://docs.obsidian.md
+MIT License
