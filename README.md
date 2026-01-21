@@ -35,6 +35,8 @@
 | verse | INTEGER | 節編號 |
 | text | TEXT | 經文內容 |
 
+開發階段利用 [Bible SuperSearch](https://github.com/BibleSuperSearch/BibleSuperSearch) 的資料庫格式，其格式可以適用本外掛。
+
 書卷編號對照：
 - 1：創世記 (Genesis)
 - 19：詩篇 (Psalms)
@@ -81,7 +83,7 @@
 
 ### 環境需求
 
-- Node.js 16+
+- Node.js 22+
 - npm
 
 ### 開發指令
