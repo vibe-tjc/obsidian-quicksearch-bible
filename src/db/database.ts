@@ -70,16 +70,32 @@ export class BibleDatabase {
 		}
 
 		try {
-			const sanitizedQuery = query.replace(/'/g, "''");
+			// Normalize Unicode to NFC form for consistent matching
+			const normalizedQuery = query.normalize("NFC");
+
+			// The database has spaces between Chinese characters (e.g., "凡 事" instead of "凡事")
+			// Create a LIKE pattern with optional spaces between each character
+			const chars = [...normalizedQuery];
+			const sanitizedChars = chars.map(c => {
+				if (c === "'") return "''";
+				if (c === "%") return "\\%";
+				if (c === "_") return "\\_";
+				if (c === " ") return "% %"; // Space in query matches space in DB
+				return c;
+			});
+			// Join with "% %" to match optional space between characters
+			const likePattern = sanitizedChars.join("% %");
+
 			const sql = `
 				SELECT id, book, chapter, verse, text
 				FROM verses
-				WHERE text LIKE '%${sanitizedQuery}%'
+				WHERE text LIKE '%${likePattern}%' ESCAPE '\\'
 				LIMIT ${limit}
 			`;
 
 			const results = this.db.exec(sql);
 			const result = results[0];
+
 			if (!result) {
 				return [];
 			}
@@ -89,7 +105,7 @@ export class BibleDatabase {
 				book: row[1] as number,
 				chapter: row[2] as number,
 				verse: row[3] as number,
-				text: row[4] as string,
+				text: this.cleanChineseText(row[4] as string),
 			}));
 		} catch (error) {
 			console.error("Search error:", error);
@@ -99,6 +115,19 @@ export class BibleDatabase {
 
 	isLoaded(): boolean {
 		return this.db !== null;
+	}
+
+	/**
+	 * Remove spaces between CJK characters and punctuation.
+	 * The database stores Chinese text with spaces between each character.
+	 */
+	private cleanChineseText(text: string): string {
+		// CJK character class: ideographs, punctuation, and fullwidth forms
+		const cjk = "\\u4e00-\\u9fff\\u3000-\\u303f\\uff00-\\uffef";
+		// Match a CJK char followed by spaces and capture the rest using a lookahead
+		// This handles consecutive CJK characters with spaces between them
+		const pattern = new RegExp(`([${cjk}])\\s+(?=[${cjk}])`, "g");
+		return text.replace(pattern, "$1");
 	}
 
 	close(): void {

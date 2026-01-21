@@ -60,10 +60,4 @@ export default class BibleQuickSearchPlugin extends Plugin {
 			);
 		}
 	}
-
-	updateSuggester(): void {
-		if (this.suggester) {
-			this.suggester.updateTriggerPattern();
-		}
-	}
 }
