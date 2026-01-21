@@ -12,21 +12,10 @@ import { formatVerse, getVerseReference, truncateText } from "../utils/formatter
 
 export class BibleSuggester extends EditorSuggest<Verse> {
 	plugin: BibleQuickSearchPlugin;
-	private triggerPattern: RegExp;
 
 	constructor(plugin: BibleQuickSearchPlugin) {
 		super(plugin.app);
 		this.plugin = plugin;
-		this.updateTriggerPattern();
-	}
-
-	updateTriggerPattern(): void {
-		const prefix = this.escapeRegex(this.plugin.settings.triggerPrefix);
-		this.triggerPattern = new RegExp(`${prefix}(\\S*)$`);
-	}
-
-	private escapeRegex(str: string): string {
-		return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 	}
 
 	onTrigger(cursor: EditorPosition, editor: Editor, _file: TFile | null): EditorSuggestTriggerInfo | null {
@@ -34,19 +23,24 @@ export class BibleSuggester extends EditorSuggest<Verse> {
 			return null;
 		}
 
-		const lineText = editor.getLine(cursor.line).substring(0, cursor.ch);
-		const match = lineText.match(this.triggerPattern);
+		const fullLine = editor.getLine(cursor.line);
+		const prefix = this.plugin.settings.triggerPrefix;
 
-		if (!match) {
+		// Handle edge case where cursor.ch might exceed line length during IME composition
+		const safeEndCh = Math.min(cursor.ch, fullLine.length);
+		const lineText = fullLine.substring(0, safeEndCh);
+		const prefixIndex = lineText.lastIndexOf(prefix);
+
+		if (prefixIndex === -1) {
 			return null;
 		}
 
-		const startPos = cursor.ch - match[0].length;
+		const query = lineText.substring(prefixIndex + prefix.length);
 
 		return {
-			start: { line: cursor.line, ch: startPos },
-			end: cursor,
-			query: match[1] || "",
+			start: { line: cursor.line, ch: prefixIndex },
+			end: { line: cursor.line, ch: safeEndCh },
+			query: query,
 		};
 	}
 

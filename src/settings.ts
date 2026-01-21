@@ -73,7 +73,6 @@ export class BibleSearchSettingTab extends PluginSettingTab {
 						if (value.trim()) {
 							this.plugin.settings.triggerPrefix = value;
 							await this.plugin.saveSettings();
-							this.plugin.updateSuggester();
 						}
 					}),
 			);
